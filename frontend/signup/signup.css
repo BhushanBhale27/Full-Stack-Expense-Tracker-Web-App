@@ -74,6 +74,7 @@
     color: #ff4c4c;
   }
   
+  
   /* Additional styles for small screens */
   @media screen and (max-width: 480px) {
     form {
