@@ -1,4 +1,5 @@
 const User = require("../models/users");
+const bcrypt = require('bcrypt')
 
 function isstringinvalid(string) {
   if (string == undefined || string.length === 0) {
@@ -19,18 +20,13 @@ exports.signup = async (req, res) => {
       return res
         .status(400)
         .json({ err: "Bad parameters . Something is missing" });
-    } else {
-      // Check if the user already exists by searching for the email
-      const existingUser = await User.findOne({ where: { email: email } });
-      if (existingUser) {
-        return res.status(409).json({ err: "User already exists" });
-      } else {
-        await User.create({ name, email, password });
-        return res
-          .status(201)
-          .json({ message: "Successfully created a new user" });
-      }
     }
+    const salt = 11;
+    bcrypt.hash(password, salt, async (err, hash) => {
+      console.log(err);
+      await User.create({ name, email, password: hash });
+      res.status(201).json({ message: "Successfuly create new user" });
+    });
   } catch (error) {
     return res.status(500).json(error);
   }
@@ -45,25 +41,28 @@ exports.login = async (req, res) => {
         .json({ message: "Email or password is missing", success: false });
     }
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findAll({ where: { email } });
 
     if (user) {
-      // If the user exists, compare the provided password with the stored password
-      if (user.password === password) {
-        return res
-          .status(200)
-          .json({ success: true, message: "User logged in successfully" });
-      } else {
-        // Incorrect password
-        return res
-          .status(401)
-          .json({ success: false, err: "Email or Password is incorrect" });
-      }
+      bcrypt.compare(password, user[0].password, (err, result) => {
+        if (err) {
+          throw new Error("Something went wrong");
+        }
+        if (result === true) {
+          return res.status(200).json({
+            success: true,
+            message: "User logged in successfully",
+          });
+        } else {
+          return res
+            .status(400)
+            .json({ success: false, err: "Password is incorrect" });
+        }
+      });
     } else {
-      // User not found
       return res
         .status(404)
-        .json({ success: false, err: "User not found" });
+        .json({ success: false, err: "User Doesnot exitst" });
     }
   } catch (error) {
     res.status(500).json({ message: error, success: false });
