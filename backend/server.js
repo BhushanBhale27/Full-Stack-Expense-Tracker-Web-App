@@ -8,8 +8,10 @@ app.use(cors())
 app.use(express.json())
 
 const userRoutes = require("./routes/users")
+const expenseRoutes = require("./routes/expense")
 
 app.use("/users" , userRoutes)
+app.use('/expense' , expenseRoutes)
 
 
 sequelize.sync()
