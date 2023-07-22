@@ -12,8 +12,8 @@ async function login(e) {
       const response = await axios.post('http://localhost:3000/users/login', loginDetails);
       alert(response.data.message);
       console.log(response.data);
-    //   localStorage.setItem('token', response.data.token);
-      window.location.href = '../expenseTracker/index.html'
+      localStorage.setItem('token', response.data.token);
+      window.location.href = '../expenseTracker/expense.html'
     } catch (err) {
       console.log(JSON.stringify(err));
       const errorMessage = err.response && err.response.data && err.response.data.err
